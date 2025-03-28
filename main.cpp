@@ -1,11 +1,11 @@
- /**********************************************************************
- * Source File:
- *    Lab 12: M777 Howitzer
- * Author:
- *    <your name here>
- * Summary:
- *    Simulate firing the M777 howitzer 15mm artillery piece
- ************************************************************************/
+/**********************************************************************
+* Source File:
+*    Lab 12: M777 Howitzer
+* Author:
+*    <your name here>
+* Summary:
+*    Simulate firing the M777 howitzer 15mm artillery piece
+************************************************************************/
 
 #include <cassert>      // for ASSERT
 #include "uiInteract.h" // for INTERFACE
@@ -29,10 +29,17 @@ void callBack(const Interface* pUI, void* p)
    // is the first step of every single callback function in OpenGL. 
    Simulator* pSim = (Simulator*)p;
 
+   // advance time by half a second.
+   pSim->time += 0.5;
+
+   //ogstream gout;
    ogstream gout;
-   Position pos(10,10);
-   gout = pos;
-   gout << "Hello world";
+
+   // draw the ground first
+   pSim->ground.draw(gout);
+
+   // draw the howitzer
+   gout.drawHowitzer(pSim->ptHowitzer, pSim->angle.getRadians(), pSim->time);
 }
 
 double Position::metersFromPixels = 40.0;
@@ -53,7 +60,7 @@ int main(int argc, char** argv)
 {
    // unit tests
    testRunner();
-  
+
    // Initialize OpenGL
    Position posUpperRight;
    posUpperRight.setZoom(40.0 /* 40 meters equals 1 pixel */);
@@ -66,7 +73,7 @@ int main(int argc, char** argv)
 
 
    // set everything into action
-   ui.run(callBack, (void *)&sim);
+   ui.run(callBack, (void*)&sim);
 
    return 0;
 }
