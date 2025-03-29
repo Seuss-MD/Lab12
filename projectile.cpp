@@ -8,43 +8,90 @@
  ************************************************************************/
 
 
+#include <list>
+#include <iostream>
+#include <iomanip>  // for setprecision and fixed
+
  #include "projectile.h"
  #include "angle.h"
  #include "position.h"
  #include "velocity.h"
+ #include "physics.h"
+
  using namespace std;
 
 
  /*********************************************
   * PROJECTILE : ADVANCE
-  *  
-  * 
-  * input:   flightPath={pos=100,200 v=0,0 t=100}
-  * output:  flightPath={}{pos.x=100      = 100 + 0*1
-  *                        pos.y=195.0968 = 200 + 0*1 + .5(-9.806)*1*1
-  *                        v.dx =0        = 0 + 0*1
-  *                        v.dy =-9.8     = 0 + (-9.8064)*1
-  *                        t=101}
+  *    s  = s0 + v t + ½ a t2 
+  *    s  = distance in meters (m)
+  *    s0 = initial distance (m)
+  *    v  = velocity (m/s)
+  *    t  = time (s)
+  *    a  = acceleration (m/s2)
   *********************************************/
  void Projectile::advance(double simulationTime)
  {
-    if (isFired && !flightPath.empty()) 
+    if (!flightPath.empty()) 
     {
        PositionVelocityTime lastState = flightPath.back();
 
        Position pos = lastState.pos;
        Velocity v = lastState.v;
-       const double g = -9.80665;
+       
 
-       pos.setMetersX(pos.getMetersX() + v.getDX() * simulationTime);
-       pos.setMetersY(pos.getMetersY() + v.getDX() * simulationTime + 0.5 * g * simulationTime * simulationTime);
-       v.setDY(v.getDY() + g * simulationTime);
+       double altitude  = pos.getMetersY();
+       double longitude = pos.getMetersX();
+       double t = 1.0;
+
+       double g = - gravityFromAltitude(altitude);
+       double density = densityFromAltitude(altitude);
+       double mach = speedSoundFromAltitude(altitude);
+       double speed = v.getSpeed();
+       double machSpeed = v.getSpeed()/mach;
+       double drag = dragFromMach(machSpeed);
+
+       double dragForceY = forceFromDrag(density, drag, radius, v.getDY());
+       double dragForceX = forceFromDrag(density, drag, radius, v.getDX());
+       
+       
+
+       double dragDDY = accelerationFromForce(dragForceY, mass);
+       double dragDDX = accelerationFromForce(dragForceX, mass);
+
+       double dragDY = velocityFromAcceleration(dragDDY, t);
+       double dragDX = velocityFromAcceleration(dragDDX, t);
 
 
-       flightPath.emplace_back(pos, v, simulationTime);
+       std::cout << std::fixed << setprecision(14);
+
+
+       // altitude
+       pos.setMetersY(altitude + v.getDY() * t + 0.5 * (g - dragDDY) * t * t);
+       cout << "  dragForceY: " << dragForceY << endl;
+       cout << "  dragDY:     " << dragDY << endl;
+       cout << "  dragDDY:    " << dragDDY << endl;
+       cout << "  gravity:    " << g <<endl;
+
+       v.addDY(g - dragDY);
+
+
+       // longitude
+       pos.setMetersX(longitude + v.getDX() * t + (0.5 * - dragDDX) * t * t);
+
+       cout << "  DX:         " << v.getDX() << endl;
+       cout << "  Drag:       " << drag << endl;
+       cout << "  dragForceX: " << dragForceX << endl;
+       cout << "  dragDX:     " << dragDX << endl;
+       cout << "  dragDDX:    " << dragDDX << endl << endl;
+       v.addDX(- dragDDX);
+
+
+       PositionVelocityTime CurrentState(pos, v, simulationTime);
+
+       flightPath.push_back(CurrentState);
     }
    
-
  }
 
 

@@ -69,6 +69,7 @@ void Velocity::set(const Angle& angle, double magnitude)
 {
    this->dx = magnitude * sin(angle.getRadians());
    this->dy = magnitude * cos(angle.getRadians());
+
 }
 
 
