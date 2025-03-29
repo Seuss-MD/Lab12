@@ -261,6 +261,7 @@ private:
          assertEquals(p.flightPath.back().v.dy, -9.8064);
          assertEquals(p.flightPath.back().t, 101.0);
       }
+
       // teardown
       teardownStandardFixture();
    } 
@@ -295,9 +296,12 @@ private:
       assertUnit(!p.flightPath.empty());
       if (!p.flightPath.empty())
       {
+         cout << fixed << setprecision(8);
          assertEquals(p.flightPath.back().pos.x, 149.9756); // 100 + 50*1 + .5(-0.0799)*1*1
+         cout << p.flightPath.back().pos.x << " 149.9756" << endl;
          assertEquals(p.flightPath.back().pos.y, 195.0968); // 200 +-40*1 + .5(-9.8064+0.0638)*1*1
          assertEquals(p.flightPath.back().v.dx, 49.9513);   // 50 + (-0.0799)*1
+         cout << p.flightPath.back().v.dx << " 49.9513" << endl;
          assertEquals(p.flightPath.back().v.dy, -9.8064);  //-40 + (-9.8064+0.0638)*1*1
          assertEquals(p.flightPath.back().t, 101.0);
       }

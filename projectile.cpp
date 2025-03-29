@@ -17,6 +17,7 @@
  #include "position.h"
  #include "velocity.h"
  #include "physics.h"
+ #include "acceleration.h"
 
  using namespace std;
 
@@ -38,57 +39,83 @@
 
        Position pos = lastState.pos;
        Velocity v = lastState.v;
-       
+       Velocity dragV;
+       Acceleration dragAcc;
+       Angle dragA = v.getAngle();
 
+       double t = 1.0;
        double altitude  = pos.getMetersY();
        double longitude = pos.getMetersX();
-       double t = 1.0;
 
        double g = - gravityFromAltitude(altitude);
        double density = densityFromAltitude(altitude);
        double mach = speedSoundFromAltitude(altitude);
+       
        double speed = v.getSpeed();
        double machSpeed = v.getSpeed()/mach;
        double drag = dragFromMach(machSpeed);
+       double dragForce = forceFromDrag(density, drag, radius, v.getSpeed());
 
-       double dragForceY = forceFromDrag(density, drag, radius, v.getDY());
-       double dragForceX = forceFromDrag(density, drag, radius, v.getDX());
-       
-       
+       if (dragForce == 0)
+       {
+         dragV.setDY(0.0);
+         dragV.setDX(0.0);
+         dragAcc.setDDY(0.0);
+         dragAcc.setDDX(0.0);
+       }
 
-       double dragDDY = accelerationFromForce(dragForceY, mass);
-       double dragDDX = accelerationFromForce(dragForceX, mass);
+       else
+       {
+       dragV.set(dragA, dragForce);
+       dragAcc.set(dragA, dragForce);
 
-       double dragDY = velocityFromAcceleration(dragDDY, t);
-       double dragDX = velocityFromAcceleration(dragDDX, t);
+       dragAcc.setDDY(accelerationFromForce(dragV.getDY(), mass));
+       dragAcc.setDDX(accelerationFromForce(dragV.getDX(), mass));
+
+       dragV.setDX(velocityFromAcceleration(dragAcc.getDDX(), t));
+       dragV.setDY(velocityFromAcceleration(dragAcc.getDDY(), t));
+       }
+
+       // altitude going down
+       if (v.getDY() < 0)
+       {
+          pos.setMetersY
+          (
+          altitude + v.getDY() * t + 0.5 * (g + dragAcc.getDDY()) * t * t
+          );
+
+          v.addDY(g + dragAcc.getDDY());
 
 
-       std::cout << std::fixed << setprecision(14);
+          // longitude
+          pos.setMetersX
+          (
+          longitude + v.getDX() * t + (0.5 * + dragAcc.getDDX()) * t * t
+          );
 
+          v.addDX(dragAcc.getDDX());
+       }
 
-       // altitude
-       pos.setMetersY(altitude + v.getDY() * t + 0.5 * (g - dragDDY) * t * t);
-       cout << "  dragForceY: " << dragForceY << endl;
-       cout << "  dragDY:     " << dragDY << endl;
-       cout << "  dragDDY:    " << dragDDY << endl;
-       cout << "  gravity:    " << g <<endl;
+       // altitude going up
+       else
+       {
+          pos.setMetersY
+          (
+          altitude + v.getDY() * t + 0.5 * (g - dragAcc.getDDY()) * t * t
+          );
 
-       v.addDY(g - dragDY);
+          v.addDY(g - dragAcc.getDDY());
 
+          // longitude
+          pos.setMetersX
+          (
+          longitude + v.getDX() * t + (0.5 * -dragAcc.getDDX()) * t * t
+          );
 
-       // longitude
-       pos.setMetersX(longitude + v.getDX() * t + (0.5 * - dragDDX) * t * t);
-
-       cout << "  DX:         " << v.getDX() << endl;
-       cout << "  Drag:       " << drag << endl;
-       cout << "  dragForceX: " << dragForceX << endl;
-       cout << "  dragDX:     " << dragDX << endl;
-       cout << "  dragDDX:    " << dragDDX << endl << endl;
-       v.addDX(- dragDDX);
-
+          v.addDX(-dragAcc.getDDX());
+       }
 
        PositionVelocityTime CurrentState(pos, v, simulationTime);
-
        flightPath.push_back(CurrentState);
     }
    

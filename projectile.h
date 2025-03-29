@@ -21,7 +21,7 @@ using namespace std;
 #include "uiDraw.h"
 
 #define MASS      46.70       // kg
-#define RADIUS    0.077545   // m
+#define RADIUS    0.077545    // m
 
 // forward declaration for the unit test class
 class TestProjectile; 
