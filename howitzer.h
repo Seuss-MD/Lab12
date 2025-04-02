@@ -51,9 +51,10 @@ class Howitzer
       // generate a new position for the howitzer
       void generatePosition(const Position& posUpperRight)
       {
-         double xPixels = random(posUpperRight.getPixelsX() * 0.1,
-            posUpperRight.getPixelsX() * 0.9);
-         position.setPixelsX(xPixels);
+         double max = posUpperRight.getMetersX();
+         double xPixels = random(0.0, max);
+ 
+         position.setMetersX(xPixels);
          position.setPixelsY(0);
       }
 

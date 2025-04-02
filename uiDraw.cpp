@@ -404,7 +404,6 @@ double random(double min, double max)
 {
    assert(min <= max);
    double num = min + ((double)rand() / (double)RAND_MAX * (max - min));
-   
    assert(min <= num && num <= max);
 
    return num;

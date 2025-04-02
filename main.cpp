@@ -33,43 +33,20 @@ void callBack(const Interface* pUI, void* p)
    // accept input
    //
 
-   // move a large amount
-   if (pUI->isRight())
-      pSim->angle.add(0.05);
-   if (pUI->isLeft())
-      pSim->angle.add(-0.05);
-
-   // move by a little
-   if (pUI->isUp())
-      pSim->angle.add((pSim->angle.getRadians()) >= 3.14159 ? 0.003 : -0.003);
-   if (pUI->isDown())
-      pSim->angle.add((pSim->angle.getRadians()) >= 3.14159 ? -0.003 : 0.003);
-
-   // fire that gun
-   if (pUI->isSpace())
-      pSim->time = 0.0;
+   pSim->input(pUI);
 
    //ogstream gout;
    ogstream gout;
 
    // draw the ground first
-   pSim->ground.draw(gout);
+   pSim->display();
 
-   // draw the howitzer
-   gout.drawHowitzer(pSim->ptHowitzer, pSim->angle.getRadians(), pSim->time);
+   pSim->gamePlay();
 
-   // draw the projectile
-   for (int i = 0; i < 20; i++)
-      gout.drawProjectile(pSim->projectilePath[i], 0.5 * (double)i);
 
    // advance time by half a second.
-   pSim->time += 0.5;
+   //pSim->time += 0.5;
 
-   // draw some text on the screen
-   gout.setf(ios::fixed | ios::showpoint);
-   gout.precision(1);
-   gout << "Time since the bullet was fired: "
-      << pSim->time << "s\n";
 }
 
 double Position::metersFromPixels = 40.0;

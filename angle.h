@@ -124,6 +124,9 @@ public:
    void setDxDy(double dx, double dy) { radians = normalize(atan(dx / dy)); }
    Angle operator+(double degrees) const { return Angle(); }
 
+   bool operator>=(double rhs) const { return radians >= rhs;}
+
+
 private:
    double radians;   // 360 degrees equals 2 PI radians
 

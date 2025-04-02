@@ -37,23 +37,25 @@
     {
        PositionVelocityTime lastState = flightPath.back();
 
-       Position pos = lastState.pos;
-       Velocity v = lastState.v;
-       Velocity dragV;
-       Acceleration dragAcc;
-       Angle dragA = v.getAngle();
+       Position pos  = lastState.pos;
+       Velocity v    = lastState.v;
+       Angle dragA   = v.getAngle();
 
-       double t = 1.0;
+       Velocity      dragV;
+       Acceleration  dragAcc;
+       
+       double t         = 1.0;
+
        double altitude  = pos.getMetersY();
        double longitude = pos.getMetersX();
 
-       double g = - gravityFromAltitude(altitude);
-       double density = densityFromAltitude(altitude);
-       double mach = speedSoundFromAltitude(altitude);
+       double g         = - gravityFromAltitude(altitude);
+       double density   = densityFromAltitude(altitude);
+       double mach      = speedSoundFromAltitude(altitude);
        
-       double speed = v.getSpeed();
+       double speed     = v.getSpeed();
        double machSpeed = v.getSpeed()/mach;
-       double drag = dragFromMach(machSpeed);
+       double drag      = dragFromMach(machSpeed);
        double dragForce = forceFromDrag(density, drag, radius, v.getSpeed());
 
        if (dragForce == 0)
@@ -72,8 +74,8 @@
        dragAcc.setDDY(accelerationFromForce(dragV.getDY(), mass));
        dragAcc.setDDX(accelerationFromForce(dragV.getDX(), mass));
 
-       dragV.setDX(velocityFromAcceleration(dragAcc.getDDX(), t));
        dragV.setDY(velocityFromAcceleration(dragAcc.getDDY(), t));
+       dragV.setDX(velocityFromAcceleration(dragAcc.getDDX(), t));
        }
 
        // altitude going down
@@ -101,10 +103,10 @@
        {
           pos.setMetersY
           (
-          altitude + v.getDY() * t + 0.5 * (g - dragAcc.getDDY()) * t * t
+          altitude + v.getDY() * t + 0.5 * (g -dragAcc.getDDY()) * t * t
           );
 
-          v.addDY(g - dragAcc.getDDY());
+          v.addDY(g -dragAcc.getDDY());
 
           // longitude
           pos.setMetersX

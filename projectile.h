@@ -19,6 +19,7 @@ using namespace std;
 #include "angle.h"
 #include "physics.h"
 #include "uiDraw.h"
+#include "ground.h"
 
 #define MASS      46.70       // kg
 #define RADIUS    0.077545    // m
@@ -32,33 +33,6 @@ class TestProjectile;
   ************************************************************************/
 class Projectile
 {
-public:
-   // Friend the unit test class
-   friend ::TestProjectile;
-
-   // create a new projectile with the default settings
-   Projectile() : mass(MASS), radius(RADIUS) 
-   {
-      double area = areaFromRadius(radius); 
-   }
-
-
-   void reset() {mass = MASS; radius = RADIUS; flightPath = {}; }
-
-   void fire(Angle a, Position pos, double muzzleVelocity)
-   {
-      Velocity muzzleV;
-      muzzleV.set(a, muzzleVelocity);
-      PositionVelocityTime path(pos, muzzleV, 1.0);
-      flightPath.push_back(path);
-   };
-
-
-   // advance the round forward until the next unit of time
-   void advance(double simulationTime);
-
-
-
 
 private:
 
@@ -76,5 +50,61 @@ private:
    };
    double mass;           // weight of the M795 projectile. Defaults to 46.7 kg
    double radius;         // radius of M795 projectile. Defaults to 0.077545 m
-   std::list<PositionVelocityTime> flightPath;
+   list<PositionVelocityTime> flightPath;
+
+
+public:
+   // Friend the unit test class
+   friend ::TestProjectile;
+
+   // create a new projectile with the default settings
+   Projectile() : mass(MASS), radius(RADIUS) 
+   {
+      double area = areaFromRadius(radius); 
+   }
+
+
+   void reset() {mass = MASS; radius = RADIUS; flightPath = {}; }
+
+   void fire(Angle a, Position pos, double muzzleVelocity)
+   {
+      reset();
+      Velocity muzzleV;
+      muzzleV.set(a, muzzleVelocity);
+      PositionVelocityTime path(pos, muzzleV, 1.0);
+      flightPath.push_back(path);
+   };
+
+   Position getPosition()
+   {
+      if (!flightPath.empty())
+         return flightPath.back().pos; 
+
+   }
+
+   void drawFlightPath(ogstream& gout)
+   {
+
+      if (flightPath.empty())
+         return;
+
+      int i = 0;
+      std::list<PositionVelocityTime>::iterator it = --flightPath.end(); // Start at last element
+
+      do {
+         gout.drawProjectile(it->pos, i);
+         if (it == flightPath.begin()) 
+            return;
+         --it;
+         ++i;
+      } while (i < 5);
+
+   };
+
+
+
+
+   // advance the round forward until the next unit of time
+   void advance(double simulationTime);
+
 };

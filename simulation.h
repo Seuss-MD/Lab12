@@ -14,6 +14,7 @@
 #include "ground.h"     // for GROUND
 #include "position.h"   // for POSITION
 #include "projectile.h" // for PROJECTILE
+#include "howitzer.h"   // for HOWITZER
 #include "angle.h"      // for ANGLE
 
 #include <vector>       // for VECTOR
@@ -37,35 +38,40 @@ class Simulator
 public:
    Simulator(const Position& posUpperRight) :
       posUpperRight(posUpperRight),
-      ground(posUpperRight), projectile()
+      ground(posUpperRight), projectile(), howitzer()
    {
+      time = -999.9;
+      hasFired = false;
       // Set the horizontal position of the howitzer. This should be random.
       // See uiDraw.h which has random() defined.
-      ptHowitzer.setPixelsX(Position(posUpperRight).getPixelsX() / 2.0);
+      howitzer.generatePosition(this-> posUpperRight);
+      
+      // ptHowitzer.setPixelsX(Position(posUpperRight).getPixelsX() / 2.0);
 
       // Generate the ground and set the vertical position of the howitzer.
-      ground.reset(ptHowitzer);
+      ground.reset(howitzer.getPosition());
 
+      ptHowitzer = howitzer.getPosition();
       // set time to 0
-      time = 0.0;
 
       // This is to make the bullet travel across the screen. Notice how there are 
       // 20 pixels, each with a different age. This gives the appearance
       // of a trail that fades off in the distance.
-      for (int i = 0; i < 20; i++)
-      {
-         projectilePath[i].setPixelsX((double)i * 2.0);
-         projectilePath[i].setPixelsY(posUpperRight.getPixelsY() / 1.5);
-      }
+      
    }
+   void gamePlay();
+   void input(const Interface* pUI);
+   void display();
 
+private:
    Ground ground;                   // the ground, described in ground.h
-   Position  projectilePath[20];    // path of the projectile, described in position.h
+   Position  projectileTrail[20];    // path of the projectile, described in position.h
    Position  ptHowitzer;            // location of the howitzer
    Position  posUpperRight;          // size of the screen
    Angle angle;                     // angle of the howitzer, in radians 
    double time;                     // amount of time since the last firing, in seconds
    Projectile projectile;           // information of the projectile fired
+   Howitzer howitzer;               // information of the Howitzer
    double t;                        // increment of time
    double hangTime;                 // time bullet is in air
    double currentGravity;           // value for current gravity
@@ -73,6 +79,7 @@ public:
    double currentDragCoefficient;   // value for current Drag Coefficent
    double currentSpeedOfSound;      // value for current speed of Sound
    double mach;                     // speed in mach
+   bool   hasFired;
 
    // Tables
    vector<pair<double, double>> gravityTable;

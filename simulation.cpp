@@ -99,3 +99,68 @@ vector<pair<double, double>> speedOfSoundTable = {
   {70000.0, 289.0},
   {80000.0, 269.0}
 };
+
+void Simulator::gamePlay()
+{
+   projectile.advance(time);
+
+   //if (ground.getElevationMeters(projectile.flightPath.back().pos))
+   time += 1.0;
+   if (hasFired)
+   {
+      cout << ground.getElevationMeters(projectile.getPosition()) << endl;
+      if (ground.getElevationMeters(projectile.getPosition()) <=  0.0)
+      {
+         projectile.reset();
+         time = 0.0;
+         hasFired = false;
+      }
+   }
+
+
+
+}
+
+void Simulator::input(const Interface* pUI)
+{
+   
+   if (pUI->isRight())
+      howitzer.rotate(0.05);
+   //pSim->angle.add(0.05);
+   if (pUI->isLeft())
+      howitzer.rotate(-0.05);
+   //pSim->angle.add(-0.05);
+
+// move by a little
+   if (pUI->isUp())
+      howitzer.raise(0.003);
+   if (pUI->isDown())
+      howitzer.raise(-0.003);
+
+   if (pUI->isSpace())
+   {
+      projectile.fire(howitzer.getElevation(), ptHowitzer, howitzer.getMuzzleVelocity());
+      time = 0.0;
+      hasFired = true;
+   }
+}
+
+void Simulator::display()
+{
+   ogstream gout;
+
+   ground.draw(gout);
+   howitzer.draw(gout, time);
+   projectile.drawFlightPath(gout);
+
+   if (hasFired)
+   {
+      // draw some text on the screen
+      gout.setf(ios::fixed | ios::showpoint);
+      gout.precision(1);
+      gout << " Time since the bullet was fired: "
+         << time << "s\n";
+   }
+
+}
+
