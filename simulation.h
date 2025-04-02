@@ -62,6 +62,7 @@ public:
    void gamePlay();
    void input(const Interface* pUI);
    void display();
+   bool onTarget(Position posTarget, Position posProjectile);
 
 private:
    Ground ground;                   // the ground, described in ground.h

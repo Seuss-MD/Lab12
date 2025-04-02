@@ -104,21 +104,40 @@ void Simulator::gamePlay()
 {
    projectile.advance(time);
 
-   //if (ground.getElevationMeters(projectile.flightPath.back().pos))
    time += 1.0;
    if (hasFired)
    {
-      cout << ground.getElevationMeters(projectile.getPosition()) << endl;
-      if (ground.getElevationMeters(projectile.getPosition()) <=  0.0)
+      Position posTarget = ground.getTarget();
+      Position posProjectile = projectile.getPosition();
+
+      if (ground.getElevationMeters(projectile.getPosition()) >= posProjectile.getMetersY())
       {
+         bool hit = onTarget(posTarget, posProjectile);
+         if (hit == true)
+            cout << "You hit the target!";
          projectile.reset();
          time = 0.0;
          hasFired = false;
       }
    }
+}
 
 
+bool Simulator::onTarget(Position posTarget, Position posProjectile)
+{
+   // not on the target if we are too high
+   if (posProjectile.getPixelsY() > posTarget.getPixelsY() + 1.0)
+      return false;
 
+   // not on the target if we are too far left
+   if (posTarget.getPixelsX() - posProjectile.getPixelsX() >= 5.0)
+      return false;
+
+   // not on the target if we are too far right
+   if (posTarget.getPixelsX() - posProjectile.getPixelsX() <= -5.0)
+      return false;
+
+   return true;
 }
 
 void Simulator::input(const Interface* pUI)
