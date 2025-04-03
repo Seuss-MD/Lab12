@@ -102,43 +102,74 @@ vector<pair<double, double>> speedOfSoundTable = {
 
 void Simulator::gamePlay()
 {
-   projectile.advance(time);
 
-   time += 1.0;
-   if (hasFired)
+   if (status == Status::FIRED)
    {
-      Position posTarget = ground.getTarget();
-      Position posProjectile = projectile.getPosition();
+      time += time_unit;
+      Position previousPosProjectile = projectile.getPosition();
+      projectile.advance(time);
 
-      if (ground.getElevationMeters(projectile.getPosition()) >= posProjectile.getMetersY())
+
+      onGround(projectile.getPosition());
+      if (status == Status::HIT_TARGET || status == Status::MISS)
       {
-         bool hit = onTarget(posTarget, posProjectile);
-         if (hit == true)
-            cout << "You hit the target!";
+         calculateTime(previousPosProjectile);
          projectile.reset();
-         time = 0.0;
-         hasFired = false;
       }
+
    }
 }
 
 
-bool Simulator::onTarget(Position posTarget, Position posProjectile)
+void Simulator::onGround( Position posProjectile)
 {
+   if (ground.getElevationMeters(posProjectile) >= posProjectile.getMetersY())
+   {
    // not on the target if we are too high
-   if (posProjectile.getPixelsY() > posTarget.getPixelsY() + 1.0)
-      return false;
+   if (posProjectile.getPixelsY() > target.getPixelsY() + 1.0)
+      status = Status::MISS;
 
    // not on the target if we are too far left
-   if (posTarget.getPixelsX() - posProjectile.getPixelsX() >= 5.0)
-      return false;
+   else if (target.getPixelsX() - posProjectile.getPixelsX() >= 5.0)
+      status = Status::MISS;
 
    // not on the target if we are too far right
-   if (posTarget.getPixelsX() - posProjectile.getPixelsX() <= -5.0)
-      return false;
+   else if (target.getPixelsX() - posProjectile.getPixelsX() <= -5.0)
+      status = Status::MISS;
 
-   return true;
+   else
+      status = Status::HIT_TARGET;
+
+   }
 }
+
+void Simulator::calculateTime(Position previousPos)
+{
+   double r1 = time;
+   double r0 = time - time_unit;
+
+   double d  = 0.0;
+   double d1 = projectile.getPosition().getMetersY();
+   double d0 = previousPos.getMetersY();
+
+      if (d1 > d0)  // if slope is negative
+      {
+         // swap d0 and d1
+         double tempD = d0;
+         d0 = d1;
+         d1 = tempD;
+         // swap r0 and r1
+         double tempR = r0;
+         r0 = r1;
+         r1 = tempR;
+      }
+
+   double r = r0 + (r1 - r0) * (d - d0) / (d1 - d0);
+   time = r;
+
+}
+
+
 
 void Simulator::input(const Interface* pUI)
 {
@@ -160,7 +191,7 @@ void Simulator::input(const Interface* pUI)
    {
       projectile.fire(howitzer.getElevation(), ptHowitzer, howitzer.getMuzzleVelocity());
       time = 0.0;
-      hasFired = true;
+      status = Status::FIRED;
    }
 }
 
@@ -171,14 +202,22 @@ void Simulator::display()
    ground.draw(gout);
    howitzer.draw(gout, time);
    projectile.drawFlightPath(gout);
+   gout.setf(ios::fixed | ios::showpoint);
+   gout.setPosition(posTextStatus);
+   gout << "Status: " << getStatus() << endl;
 
-   if (hasFired)
+   if (status == Status::FIRED)
    {
       // draw some text on the screen
-      gout.setf(ios::fixed | ios::showpoint);
       gout.precision(1);
-      gout << " Time since the bullet was fired: "
+      gout << "Time since the bullet was fired: "
          << time << "s\n";
+   }
+   if (status == Status::MISS || status == Status::HIT_TARGET)
+   {
+      gout.precision(1);
+      gout << "Projectile hangtime: "
+           << time << "s\n";
    }
 
 }

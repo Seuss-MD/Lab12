@@ -26,6 +26,7 @@
 #define bullet_diameter       154.89   // mm
 #define bullet_radius         bullet_diameter * 0.5 * 0.001
 #define bullet_surface_area   M_PI*bullet_radius*bullet_radius
+#define time_unit             1.0
 
 using namespace std;
 
@@ -41,7 +42,8 @@ public:
       ground(posUpperRight), projectile(), howitzer()
    {
       time = -999.9;
-      hasFired = false;
+      timeUnit = time_unit;
+      status = Status::READY;
       // Set the horizontal position of the howitzer. This should be random.
       // See uiDraw.h which has random() defined.
       howitzer.generatePosition(this-> posUpperRight);
@@ -52,6 +54,11 @@ public:
       ground.reset(howitzer.getPosition());
 
       ptHowitzer = howitzer.getPosition();
+
+      target = ground.getTarget();
+      posTextStatus = posUpperRight;
+      posTextStatus.addPixelsX(-220);
+      posTextStatus.addPixelsY(-15);
       // set time to 0
 
       // This is to make the bullet travel across the screen. Notice how there are 
@@ -59,10 +66,20 @@ public:
       // of a trail that fades off in the distance.
       
    }
+
+   enum class Status
+   {
+      READY,      
+      FIRED,    
+      HIT_TARGET, 
+      MISS        
+   };
+
    void gamePlay();
    void input(const Interface* pUI);
    void display();
-   bool onTarget(Position posTarget, Position posProjectile);
+   void onGround(Position posProjectile);
+   void calculateTime(Position previousPos);
 
 private:
    Ground ground;                   // the ground, described in ground.h
@@ -80,7 +97,28 @@ private:
    double currentDragCoefficient;   // value for current Drag Coefficent
    double currentSpeedOfSound;      // value for current speed of Sound
    double mach;                     // speed in mach
-   bool   hasFired;
+   double timeUnit;
+   Position target;
+   Position posTextStatus;
+
+   Status status;
+
+   string getStatus()
+   {
+      switch (status)
+      {
+      case Status::READY:
+         return "READY";
+      case Status::FIRED:
+         return "FIRED";
+      case Status::HIT_TARGET:
+         return "HIT_TARGET";
+      case Status::MISS:
+         return "MISS";
+      default:
+         return "UNKNOWN";
+      }
+   }
 
    // Tables
    vector<pair<double, double>> gravityTable;

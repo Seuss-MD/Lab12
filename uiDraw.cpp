@@ -123,7 +123,7 @@ void ogstream :: drawText(const Position & topLeft, const char * text)
    void *pFont = GLUT_TEXT;
 
    // prepare to draw the text from the top-left corner
-   glRasterPos2f((GLfloat)topLeft.getPixelsX(), (GLfloat)topLeft.getPixelsY());
+   glRasterPos2f((GLfloat) topLeft.getPixelsX(), (GLfloat)topLeft.getPixelsY());
 
    // loop through the text
    for (const char *p = text; *p; p++)
