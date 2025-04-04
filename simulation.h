@@ -26,7 +26,7 @@
 #define bullet_diameter       154.89   // mm
 #define bullet_radius         bullet_diameter * 0.5 * 0.001
 #define bullet_surface_area   M_PI*bullet_radius*bullet_radius
-#define time_unit             1.0
+#define time_unit             1.0      // s
 
 using namespace std;
 
@@ -41,29 +41,23 @@ public:
       posUpperRight(posUpperRight),
       ground(posUpperRight), projectile(), howitzer()
    {
-      time = -999.9;
-      timeUnit = time_unit;
-      status = Status::READY;
+      time          = -999.9;
+      timeUnit      = time_unit;
+      status        = Status::READY;
+
       // Set the horizontal position of the howitzer. This should be random.
-      // See uiDraw.h which has random() defined.
       howitzer.generatePosition(this-> posUpperRight);
       
-      // ptHowitzer.setPixelsX(Position(posUpperRight).getPixelsX() / 2.0);
 
-      // Generate the ground and set the vertical position of the howitzer.
+      // Generate the ground, target and set the vertical position of the howitzer.
       ground.reset(howitzer.getPosition());
-
-      ptHowitzer = howitzer.getPosition();
-
-      target = ground.getTarget();
+      ptHowitzer    = howitzer.getPosition();
+      target        = ground.getTarget();
+      
+      //Position for the Status Text
       posTextStatus = posUpperRight;
       posTextStatus.addPixelsX(-220);
       posTextStatus.addPixelsY(-15);
-      // set time to 0
-
-      // This is to make the bullet travel across the screen. Notice how there are 
-      // 20 pixels, each with a different age. This gives the appearance
-      // of a trail that fades off in the distance.
       
    }
 
@@ -90,13 +84,6 @@ private:
    double time;                     // amount of time since the last firing, in seconds
    Projectile projectile;           // information of the projectile fired
    Howitzer howitzer;               // information of the Howitzer
-   double t;                        // increment of time
-   double hangTime;                 // time bullet is in air
-   double currentGravity;           // value for current gravity
-   double currentAirDensity;        // value for current Air Density
-   double currentDragCoefficient;   // value for current Drag Coefficent
-   double currentSpeedOfSound;      // value for current speed of Sound
-   double mach;                     // speed in mach
    double timeUnit;
    Position target;
    Position posTextStatus;

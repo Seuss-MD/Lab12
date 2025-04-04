@@ -181,12 +181,13 @@ void Simulator::input(const Interface* pUI)
       howitzer.rotate(-0.05);
    //pSim->angle.add(-0.05);
 
-// move by a little
+   // move by a little
    if (pUI->isUp())
       howitzer.raise(0.003);
    if (pUI->isDown())
       howitzer.raise(-0.003);
 
+   // fire the bullet
    if (pUI->isSpace())
    {
       projectile.fire(howitzer.getElevation(), ptHowitzer, howitzer.getMuzzleVelocity());
@@ -202,13 +203,14 @@ void Simulator::display()
    ground.draw(gout);
    howitzer.draw(gout, time);
    projectile.drawFlightPath(gout);
+   
+   // draw text
    gout.setf(ios::fixed | ios::showpoint);
    gout.setPosition(posTextStatus);
    gout << "Status: " << getStatus() << endl;
 
    if (status == Status::FIRED)
    {
-      // draw some text on the screen
       gout.precision(1);
       gout << "Time since the bullet was fired: "
          << time << "s\n";
